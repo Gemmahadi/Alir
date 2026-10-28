@@ -57,6 +57,10 @@
     <!-- #007DFF --> <color name="app_blue">#007DFF</color>
     <!-- #0052CB --> <color name="app_blue_dark">#0052CB</color>
 
+    <!-- Alir brand colours (launcher icon: navy tile, cyan wave) -->
+    <!-- #041C51 --> <color name="alir_navy">#041c51</color>
+    <!-- #00D5FF --> <color name="alir_cyan">#00d5ff</color>
+
     <!-- Material design palette -->
     <!--reds-->
     <!-- #FFEBEE --> <color name="md_red_50">#FFEBEE</color>

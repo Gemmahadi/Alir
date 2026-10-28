@@ -33,14 +33,20 @@ class MediaHubSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         emptyView = view.findViewById(R.id.media_empty)
-        adapter = Adapter { item ->
-            dismiss()
-            if (item.type == MediaSniffer.Type.VIDEO) {
-                MediaPlayback.playVideo(requireContext(), item.url)
-            } else {
-                MediaPlayback.playAudio(requireContext(), item.url)
+        adapter = Adapter(
+            onClick = { item ->
+                dismiss()
+                if (item.type == MediaSniffer.Type.VIDEO) {
+                    MediaPlayback.playVideo(requireContext(), item)
+                } else {
+                    MediaPlayback.playAudio(requireContext(), item)
+                }
+            },
+            onListenOnly = { item ->
+                dismiss()
+                MediaPlayback.playAudio(requireContext(), item)
             }
-        }
+        )
         val list = view.findViewById<RecyclerView>(R.id.media_list)
         list.layoutManager = LinearLayoutManager(requireContext())
         list.adapter = adapter
@@ -58,8 +64,10 @@ class MediaHubSheet : BottomSheetDialogFragment() {
         emptyView.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
     }
 
-    private class Adapter(private val onClick: (MediaSniffer.Item) -> Unit) :
-        RecyclerView.Adapter<Holder>() {
+    private class Adapter(
+        private val onClick: (MediaSniffer.Item) -> Unit,
+        private val onListenOnly: (MediaSniffer.Item) -> Unit
+    ) : RecyclerView.Adapter<Holder>() {
 
         private var items: List<MediaSniffer.Item> = emptyList()
 
@@ -89,6 +97,14 @@ class MediaHubSheet : BottomSheetDialogFragment() {
                 else R.drawable.ic_play_arrow
             )
             holder.itemView.setOnClickListener { onClick(item) }
+            // Video rows offer "listen only": the audio service keeps playing
+            // with the screen off, which the floating video player cannot do.
+            if (item.type == MediaSniffer.Type.VIDEO) {
+                holder.listen.visibility = View.VISIBLE
+                holder.listen.setOnClickListener { onListenOnly(item) }
+            } else {
+                holder.listen.visibility = View.GONE
+            }
         }
 
         override fun getItemCount(): Int = items.size
@@ -98,6 +114,7 @@ class MediaHubSheet : BottomSheetDialogFragment() {
         val title: TextView = view.findViewById(R.id.media_title)
         val sub: TextView = view.findViewById(R.id.media_sub)
         val icon: ImageView = view.findViewById(R.id.media_icon)
+        val listen: TextView = view.findViewById(R.id.media_listen)
     }
 
     companion object {

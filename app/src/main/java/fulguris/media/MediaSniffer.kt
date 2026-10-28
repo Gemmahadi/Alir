@@ -7,6 +7,11 @@ package fulguris.media
  * only sees the request URL, not response headers. Only non-blocked requests are
  * recorded (the hook in WebPageClient skips anything the ad blocker stopped).
  * Safe to call from any thread: shouldInterceptRequest runs off the UI thread.
+ *
+ * Each item also keeps the playback context the page itself used (Referer,
+ * WebView User-Agent, media-host cookies) so ExoPlayer can replay the request
+ * the way the browser did — plain URLs without those headers get 403 from
+ * many hotlink-protected hosts.
  */
 object MediaSniffer {
 
@@ -16,11 +21,18 @@ object MediaSniffer {
         val url: String,
         val pageUrl: String,
         val type: Type,
+        /** Page URL, sent back as Referer on playback. */
+        val referer: String = "",
+        /** WebView User-Agent, sent so hosts don't reject the player as a bot. */
+        val userAgent: String = "",
+        /** Cookies for the media host, if the WebView holds any. */
+        val cookie: String? = null,
         val foundAt: Long = System.currentTimeMillis()
     )
 
     private val lock = Any()
     private val itemsByUrl = LinkedHashMap<String, Item>()
+    private val listeners = mutableListOf<() -> Unit>()
 
     /** All recorded items, newest first. */
     fun items(): List<Item> = synchronized(lock) {
@@ -32,22 +44,37 @@ object MediaSniffer {
     fun clear() = synchronized(lock) { itemsByUrl.clear() }
 
     /**
+     * Change listener (e.g. the toolbar badge). Invoked on the calling thread,
+     * so UI listeners must post to the main thread themselves.
+     */
+    fun addListener(listener: () -> Unit) = synchronized(lock) { listeners += listener }
+
+    fun removeListener(listener: () -> Unit) = synchronized(lock) { listeners -= listener }
+
+    /**
      * Record [url] if it looks like playable media. Returns the item, or null
      * when the URL is not playable media. Repeated URLs are de-duplicated.
      */
-    fun sniff(url: String, pageUrl: String): Item? {
+    fun sniff(
+        url: String,
+        pageUrl: String,
+        userAgent: String = "",
+        cookie: String? = null
+    ): Item? {
         val type = detectType(url) ?: return null
+        val item: Item
         synchronized(lock) {
             itemsByUrl[url]?.let { return it }
-            val item = Item(url, pageUrl, type)
+            item = Item(url, pageUrl, type, referer = pageUrl, userAgent = userAgent, cookie = cookie)
             itemsByUrl[url] = item
             // Cap memory: drop the oldest items beyond 200.
             while (itemsByUrl.size > 200) {
                 val oldest = itemsByUrl.values.minByOrNull { it.foundAt }?.url ?: break
                 itemsByUrl.remove(oldest)
             }
-            return item
         }
+        synchronized(lock) { listeners.toList() }.forEach { it() }
+        return item
     }
 
     /** Extension-based detection on the URL path (query and fragment stripped). */

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Alir mini-player: shown inside the browser toolbar while the background
+     audio service plays. Lives in toolbar.xml so it follows the toolbar
+     whether toolbars sit at the top or the bottom. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mini_player_bar"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:background="@color/alir_navy"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="12dp"
+    android:paddingEnd="4dp"
+    android:visibility="gone">
+
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_play_arrow"
+        android:tint="@color/alir_cyan" />
+
+    <TextView
+        android:id="@+id/mini_player_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:ellipsize="middle"
+        android:maxLines="1"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp" />
+
+    <ImageButton
+        android:id="@+id/mini_player_play_pause"
+        style="?android:attr/actionButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/media_play_pause"
+        android:src="@drawable/ic_pause_bars"
+        android:tint="#FFFFFF" />
+
+    <ImageButton
+        android:id="@+id/mini_player_close"
+        style="?android:attr/actionButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/exit"
+        android:src="@drawable/ic_tab_close"
+        android:tint="#FFFFFF" />
+
+</LinearLayout>

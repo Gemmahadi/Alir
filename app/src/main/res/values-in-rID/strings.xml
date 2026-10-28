@@ -13,6 +13,8 @@
     <string name="media_empty">Belum ada media ditemukan.</string>
     <string name="media_type_video">Video</string>
     <string name="media_type_audio">Audio</string>
+    <string name="media_listen_only">Dengarkan saja</string>
+    <string name="media_play_pause">Putar / Jeda</string>
     <string name="action_bookmarks">Markah</string>
     <string name="action_downloads">Unduhan</string>
     <string name="action_add_bookmark">Tambahkan bookmark</string>

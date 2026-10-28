@@ -46,5 +46,9 @@
             app:bidirectionalAnimate="false"
             app:progressColor="?attr/colorAccent" />
 
+        <!-- Alir mini-player: inside the toolbar layout so it follows the
+             toolbar whether toolbars sit at the top or the bottom. -->
+        <include layout="@layout/mini_player" />
+
     </LinearLayout>
 </layout>

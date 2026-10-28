@@ -113,12 +113,45 @@
         android:nextFocusDown="@id/web_view"
         />
 
+    <!-- Alir Media button: always visible, with a badge counting the media
+         sniffed this session. Opens the same hub as the "Media" menu item. -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+        <ImageButton
+            android:id="@+id/button_media"
+            style="?android:attr/actionButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:contentDescription="@string/action_media"
+            android:tint="@color/alir_cyan"
+            app:srcCompat="@drawable/ic_play_arrow"
+            app:tooltipText="@{@string/action_media}"
+            android:nextFocusDown="@id/web_view" />
+
+        <TextView
+            android:id="@+id/media_badge"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="top|end"
+            android:background="@drawable/badge_circle"
+            android:gravity="center"
+            android:textColor="#041c51"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+    </FrameLayout>
+
     <ImageButton
         android:id="@+id/button_more"
         style="?android:attr/actionButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:tint="@color/alir_cyan"
         app:srcCompat="@drawable/ic_lightning"
         android:contentDescription="@string/action_menu"
         app:tooltipText="@{@string/action_menu}"

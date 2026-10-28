@@ -210,9 +210,16 @@ class WebPageClient(
         val wasBlocked = response != null
 
         val url = request.url.toString()
-        // Alir Media Sniffer: record playable media for the hub (skip blocked requests)
+        // Alir Media Sniffer: record playable media for the hub (skip blocked requests).
+        // Keep the playback context the page used (WebView UA + media-host cookies)
+        // so the player can replay the request instead of getting a bare-URL 403.
         if (!wasBlocked) {
-            MediaSniffer.sniff(url, currentUrl)
+            MediaSniffer.sniff(
+                url,
+                currentUrl,
+                view.settings.userAgentString,
+                android.webkit.CookieManager.getInstance().getCookie(url)
+            )
         }
 
         // Detect if this is a main document request (page navigation) vs subresource

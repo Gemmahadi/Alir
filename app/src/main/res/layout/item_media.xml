@@ -35,4 +35,15 @@
             android:maxLines="1"
             android:textSize="13sp" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/media_listen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:padding="8dp"
+        android:text="@string/media_listen_only"
+        android:textColor="?attr/colorAccent"
+        android:textSize="13sp"
+        android:visibility="gone" />
 </LinearLayout>

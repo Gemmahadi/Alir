@@ -27,6 +27,8 @@
     <string name="media_empty">No media found yet.</string>
     <string name="media_type_video">Video</string>
     <string name="media_type_audio">Audio</string>
+    <string name="media_listen_only">Listen only</string>
+    <string name="media_play_pause">Play / Pause</string>
     <string name="action_bookmarks">Bookmarks</string>
     <string name="action_downloads">Downloads</string>
     <string name="action_add_bookmark">Add bookmark</string>

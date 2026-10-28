@@ -68,6 +68,8 @@ object MenuItems {
             defaultMenu = MenuType.MainMenu,
             optional = true
         ),
+        // Alir declutter: Sessions starts hidden (restorable from menu
+        // settings, like NewTab/Exit) so the first-run menus stay focused.
         MenuItemId.Sessions to MenuItem(
             id = MenuItemId.Sessions,
             labelId = R.string.action_sessions,
@@ -75,7 +77,8 @@ object MenuItems {
             viewId = R.id.menuItemSessions,
             canBeInMainMenu = true,
             canBeInTabMenu = true,
-            defaultMenu = MenuType.MainMenu
+            defaultMenu = MenuType.HiddenMenu,
+            preferredMenu = MenuType.MainMenu
         ),
         MenuItemId.Bookmarks to MenuItem(
             id = MenuItemId.Bookmarks,
@@ -123,6 +126,8 @@ object MenuItems {
             defaultMenu = MenuType.HiddenMenu,
             preferredMenu = MenuType.MainMenu
         ),
+        // Alir declutter: Incognito starts hidden (restorable from menu
+        // settings) so the first-run menus stay focused.
         MenuItemId.Incognito to MenuItem(
             id = MenuItemId.Incognito,
             labelId = R.string.action_incognito,
@@ -130,7 +135,8 @@ object MenuItems {
             viewId = R.id.menuItemIncognito,
             canBeInMainMenu = true,
             canBeInTabMenu = true,
-            defaultMenu = MenuType.MainMenu
+            defaultMenu = MenuType.HiddenMenu,
+            preferredMenu = MenuType.MainMenu
         ),
         MenuItemId.Options to MenuItem(
             id = MenuItemId.Options,

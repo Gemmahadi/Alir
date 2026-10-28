@@ -78,6 +78,9 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import fulguris.*
 import fulguris.media.MediaHubSheet
+import fulguris.media.MediaPlayback
+import fulguris.media.MediaSniffer
+import fulguris.media.NowPlaying
 import fulguris.BuildConfig
 import fulguris.R
 import fulguris.adblock.AbpUserRules
@@ -1468,8 +1471,59 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
     /**
      *
      */
+    // ---- Alir media UI: toolbar button + badge, mini-player bar ----
+    private var miniPlayerBar: View? = null
+    private var miniPlayerTitle: TextView? = null
+    private var miniPlayerPlayPause: ImageButton? = null
+
+    private val mediaSnifferListener = { updateMediaBadge() }
+    private val nowPlayingListener = { updateMiniPlayer() }
+
+    private fun setupAlirMedia() {
+        iBindingToolbarContent.buttonMedia.setOnClickListener {
+            MediaHubSheet().show(supportFragmentManager, "media_hub")
+        }
+        val toolbarRoot = iBinding.toolbarInclude.root
+        miniPlayerBar = toolbarRoot.findViewById(R.id.mini_player_bar)
+        miniPlayerTitle = toolbarRoot.findViewById(R.id.mini_player_title)
+        miniPlayerPlayPause = toolbarRoot.findViewById(R.id.mini_player_play_pause)
+        miniPlayerPlayPause?.setOnClickListener {
+            MediaPlayback.sendAction(this, MediaPlayback.ACTION_TOGGLE)
+        }
+        toolbarRoot.findViewById<View>(R.id.mini_player_close)?.setOnClickListener {
+            MediaPlayback.sendAction(this, MediaPlayback.ACTION_STOP)
+        }
+        updateMediaBadge()
+        updateMiniPlayer()
+    }
+
+    /** Session total from the sniffer; badge hides when nothing was found yet. */
+    private fun updateMediaBadge() {
+        val count = MediaSniffer.count()
+        runOnUiThread {
+            iBindingToolbarContent.mediaBadge.apply {
+                visibility = if (count > 0) View.VISIBLE else View.GONE
+                text = if (count > 99) "99+" else count.toString()
+            }
+        }
+    }
+
+    private fun updateMiniPlayer() {
+        runOnUiThread {
+            val title = NowPlaying.title
+            miniPlayerBar?.visibility = if (title == null) View.GONE else View.VISIBLE
+            if (title != null) {
+                miniPlayerTitle?.text = title
+                miniPlayerPlayPause?.setImageResource(
+                    if (NowPlaying.isPlaying) R.drawable.ic_pause_bars else R.drawable.ic_play_arrow
+                )
+            }
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun setupButtonMore() {
+        setupAlirMedia()
 
         iBindingToolbarContent.buttonMore.setOnClickListener {
             // Without that handler we don't get audio feedback on F(x)tec Pro
@@ -3948,6 +4002,10 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         super.onPause()
         Timber.d("onPause")
 
+        // Alir media UI: stop following sniffer + audio state while hidden.
+        MediaSniffer.removeListener(mediaSnifferListener)
+        if (NowPlaying.listener == nowPlayingListener) NowPlaying.listener = null
+
         // In PiP mode, only pause non-current tabs so video keeps playing
         val inPip = isPipRequested ||
             (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N && isInPictureInPictureMode)
@@ -4168,6 +4226,12 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         updateConfigurationSharedPreferences()
         super.onResume()
         Timber.d("onResume")
+
+        // Alir media UI: follow sniffer + audio state while visible.
+        MediaSniffer.addListener(mediaSnifferListener)
+        NowPlaying.listener = nowPlayingListener
+        updateMediaBadge()
+        updateMiniPlayer()
         // Check if some settings changes require application restart
         if (swapBookmarksAndTabs != userPreferences.bookmarksAndTabsSwapped
                 || analytics != userPreferences.analytics
