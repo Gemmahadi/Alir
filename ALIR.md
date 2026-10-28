@@ -2,7 +2,7 @@
 
 **Alir** is an Android web browser by GEMMA WORKS, built from the open-source
 [Fulguris](https://github.com/Slion/Fulguris) browser by Stéphane Lenclud.
-Package: `com.alir.browser`, version 1.0.9 (code 10). Debug builds install as
+Package: `com.alir.browser`, version 1.0.10 (code 11). Debug builds install as
 `com.alir.browser.debug` (`.debug` suffix from the debug build type).
 
 ## What changed from Fulguris (v1 rebrand)
@@ -136,6 +136,16 @@ Package: `com.alir.browser`, version 1.0.9 (code 10). Debug builds install as
   Build history: v1.0.8 = CI run 40675022543, commit d903c3b, APK
   24,768,777 B, SHA-256 0f2e17fc…12087, verified (badging code 9 / 1.0.8,
   apksigner OK, 1 LAUNCHER, 0 leak, new seed + migration flag in dex).
+- v1.0.9: legacy launcher icons replaced. The adaptive icon was already
+  the Alir logo, but all 20 legacy mipmap .webp files (ic_launcher,
+  ic_launcher_round, ic_launcher_incognito, ic_launcher_incognito_round ×
+  mdpi/hdpi/xhdpi/xxhdpi/xxxhdpi) still held the old Fulguris bolt, and
+  MIUI renders the legacy path — so the home screen showed the bolt.
+  Regenerated from the 1600px Alir tile (script
+  ~/workspace/gen_alir_legacy_icons.py): square = scaled tile, round =
+  circle crop. Verified visually at xxhdpi. Note: after updating, MIUI
+  may still show the cached old icon — if so, reboot or remove + re-add
+  the home icon.
 
 ## Licenses
 
