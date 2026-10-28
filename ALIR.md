@@ -2,7 +2,7 @@
 
 **Alir** is an Android web browser by GEMMA WORKS, built from the open-source
 [Fulguris](https://github.com/Slion/Fulguris) browser by Stéphane Lenclud.
-Package: `com.alir.browser`, version 1.0.10 (code 11). Debug builds install as
+Package: `com.alir.browser`, version 1.0.11 (code 12). Debug builds install as
 `com.alir.browser.debug` (`.debug` suffix from the debug build type).
 
 ## What changed from Fulguris (v1 rebrand)
@@ -10,7 +10,7 @@ Package: `com.alir.browser`, version 1.0.10 (code 11). Debug builds install as
 - App name: Fulguris → **Alir** (all locales, `app_name` + user-visible strings).
 - Application ID: `net.slions.fulguris` → `com.alir.browser` (slions flavor,
   `.full` and `.fdroid` suffixes removed, so the fdroid release installs clean).
-- Version: 1.0.9 / code 10 (v1.0.0 / code 1 was the first CI-built APK).
+- Version: 1.0.11 / code 12 (v1.0.0 / code 1 was the first CI-built APK).
 - Custom URL scheme: `fulguris://` → `alir://`.
 - Launcher icon: new Alir mark (glowing cyan wave + white play triangle on navy).
 - About screen: new "Berdasarkan Fulguris" row linking to the upstream repo
@@ -136,16 +136,36 @@ Package: `com.alir.browser`, version 1.0.10 (code 11). Debug builds install as
   Build history: v1.0.8 = CI run 40675022543, commit d903c3b, APK
   24,768,777 B, SHA-256 0f2e17fc…12087, verified (badging code 9 / 1.0.8,
   apksigner OK, 1 LAUNCHER, 0 leak, new seed + migration flag in dex).
-- v1.0.9: legacy launcher icons replaced. The adaptive icon was already
-  the Alir logo, but all 20 legacy mipmap .webp files (ic_launcher,
-  ic_launcher_round, ic_launcher_incognito, ic_launcher_incognito_round ×
-  mdpi/hdpi/xhdpi/xxhdpi/xxxhdpi) still held the old Fulguris bolt, and
-  MIUI renders the legacy path — so the home screen showed the bolt.
-  Regenerated from the 1600px Alir tile (script
-  ~/workspace/gen_alir_legacy_icons.py): square = scaled tile, round =
-  circle crop. Verified visually at xxhdpi. Note: after updating, MIUI
-  may still show the cached old icon — if so, reboot or remove + re-add
-  the home icon.
+- v1.0.9: legacy launcher icons replaced in main — BUT NOT SHIPPED.
+  Verification of the CI APK caught it: the APK's legacy icons were
+  still the old bolt (hash-identical to the pre-fix files). Cause: the
+  fdroid flavor source set (`app/src/fdroid/res/mipmap-*/`) carries its
+  own ic_launcher/ic_launcher_round, and flavor resources override main
+  at merge time — the same override pattern as the slions bookmarks seed.
+  Lesson: always hash-check icons inside the built APK, not just the repo.
+- v1.0.10: the fix, done right. Regenerated the Alir logo into the
+  fdroid, download, and agent flavor sets too (ic_launcher + round × 5
+  densities each; main already had all 4 names × 5 densities from v1.0.9).
+  All flavor icons now hash-match main's new icons. The v1.0.9 APK is
+  discarded, never delivered. Note: after updating, MIUI may still show
+  the cached old icon — if so, reboot or remove + re-add the home icon.
+  Build history: v1.0.10 = CI run 40678436017, commit d50d4a8, APK
+  24,879,949 B, SHA-256 184c6127…581892f, verified (badging code 11 /
+  1.0.10, apksigner OK, 1 LAUNCHER, APK icon hashes = new logo hashes,
+  xxhdpi icon viewed = wave+play).
+- v1.0.11: SECOND ThreadPoolForeg crash, same family as v1.0.7 but a new
+  site (report 1.0.10, 19:07): `WebPageTab.getUrl` ← `updateMediaBadge`
+  ← sniffer listener ← `MediaSniffer.sniff` ← `shouldInterceptRequest`.
+  Cause: sniff() invoked listeners on the calling thread (the IO thread),
+  and updateMediaBadge reads the current tab's WebView URL *before* its
+  runOnUiThread block — so the first page that actually contained media
+  crashed. (v1.0.7's bookmark retest never found media, so it never
+  fired; and before v1.0.7 the always-firing UA crash hid this one.)
+  Fix: MediaSniffer now dispatches all listeners via a main-thread
+  Handler; the listener contract doc corrected (was: "UI listeners must
+  post to the main thread themselves" — the trap). The only listener is
+  the toolbar badge; the mini-player listener was already safe
+  (everything inside runOnUiThread, no WebView reads).
 
 ## Licenses
 

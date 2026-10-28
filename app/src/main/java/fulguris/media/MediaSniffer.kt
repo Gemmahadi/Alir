@@ -33,6 +33,7 @@ object MediaSniffer {
     private val lock = Any()
     private val itemsByUrl = LinkedHashMap<String, Item>()
     private val listeners = mutableListOf<() -> Unit>()
+    private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
     /** All recorded items, newest first. */
     fun items(): List<Item> = synchronized(lock) {
@@ -50,8 +51,9 @@ object MediaSniffer {
     fun clear() = synchronized(lock) { itemsByUrl.clear() }
 
     /**
-     * Change listener (e.g. the toolbar badge). Invoked on the calling thread,
-     * so UI listeners must post to the main thread themselves.
+     * Change listener (e.g. the toolbar badge). Always invoked on the main
+     * thread, because listeners touch UI — the toolbar badge reads the
+     * current tab's WebView URL, which throws off the UI thread.
      */
     fun addListener(listener: () -> Unit) = synchronized(lock) { listeners += listener }
 
@@ -79,7 +81,16 @@ object MediaSniffer {
                 itemsByUrl.remove(oldest)
             }
         }
-        synchronized(lock) { listeners.toList() }.forEach { it() }
+        // Dispatch on the main thread: sniff() runs on Chromium's IO thread
+        // (shouldInterceptRequest), and listeners touch UI state. Previously
+        // listeners ran on the calling thread, so the first page that
+        // actually contained media crashed in WebView.getUrl via the badge
+        // (v1.0.10 report) — the v1.0.7 UA fix had only hidden it behind
+        // the earlier, always-firing UA crash.
+        val toNotify = synchronized(lock) { listeners.toList() }
+        if (toNotify.isNotEmpty()) {
+            mainHandler.post { toNotify.forEach { it() } }
+        }
         return item
     }
 
