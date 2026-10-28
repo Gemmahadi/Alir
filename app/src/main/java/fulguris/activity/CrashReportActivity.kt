@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import dagger.hilt.android.AndroidEntryPoint
 import fulguris.utils.CrashReporter
 import javax.inject.Inject
@@ -107,7 +108,18 @@ class CrashReportActivity @Inject constructor() : LocaleAwareActivity() {
         setContentView(root)
 
         // Back means "skip the report and continue", never "stuck on this screen".
-        onBackPressedDispatcher.addCallback(this) { proceed() }
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    proceed()
+                }
+            }
+        )
+    }
+
+    // Required by LocaleAwareActivity; the report screen needs no locale handling.
+    override fun onLocaleChanged() {
     }
 
     private fun proceed() {
