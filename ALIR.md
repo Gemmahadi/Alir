@@ -2,7 +2,7 @@
 
 **Alir** is an Android web browser by GEMMA WORKS, built from the open-source
 [Fulguris](https://github.com/Slion/Fulguris) browser by Stéphane Lenclud.
-Package: `com.alir.browser`, version 1.0.2 (code 3). Debug builds install as
+Package: `com.alir.browser`, version 1.0.3 (code 4). Debug builds install as
 `com.alir.browser.debug` (`.debug` suffix from the debug build type).
 
 ## What changed from Fulguris (v1 rebrand)
@@ -10,7 +10,7 @@ Package: `com.alir.browser`, version 1.0.2 (code 3). Debug builds install as
 - App name: Fulguris → **Alir** (all locales, `app_name` + user-visible strings).
 - Application ID: `net.slions.fulguris` → `com.alir.browser` (slions flavor,
   `.full` and `.fdroid` suffixes removed, so the fdroid release installs clean).
-- Version: 1.0.2 / code 3 (v1.0.0 / code 1 was the first CI-built APK).
+- Version: 1.0.3 / code 4 (v1.0.0 / code 1 was the first CI-built APK).
 - Custom URL scheme: `fulguris://` → `alir://`.
 - Launcher icon: new Alir mark (glowing cyan wave + white play triangle on navy).
 - About screen: new "Berdasarkan Fulguris" row linking to the upstream repo
@@ -83,10 +83,15 @@ Package: `com.alir.browser`, version 1.0.2 (code 3). Debug builds install as
   on: `yes | sdkmanager` under pipefail (SIGPIPE), `setup-android@v3`,
   AAPT `show_controller` (no such PlayerView attr), Kotlin `when` missing the
   Media branch. Fixes are in `.github/workflows/build-alir.yml` and the code.
-- v1.0.1: this batch (headers, listen-only, audio hardening, toolbar button
-  + badge, mini-player, declutter, brand colors).
-- v1.0.2: header-leak fix (rebuild player per item), mini-player action
-  crash edge, play-failure toast, audio-only tracks, per-page badge.
+- v1.0.1 debug (run 40636230118): success. Batch: headers, listen-only,
+  audio hardening, toolbar button + badge, mini-player, declutter, brand
+  colors.
+- v1.0.2 debug (run 40640637236): success. Batch: header-leak fix (rebuild
+  player per item), mini-player action crash edge, play-failure toast,
+  audio-only tracks, per-host badge.
+- v1.0.3: track-end stop (no stale notification/mini-player), track title
+  in MediaItem metadata (media3 notification/lock-screen title), this
+  build-history record.
 
 ## Licenses
 

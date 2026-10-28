@@ -6,6 +6,7 @@ import android.content.Intent
 import androidx.core.content.ContextCompat
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.TrackSelectionParameters
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
@@ -73,7 +74,19 @@ object MediaPlayback {
         )
     }
 
-    fun mediaItem(item: MediaSniffer.Item): MediaItem = MediaItem.fromUri(item.url)
+    /**
+     * The media3 notification and lock-screen controls show the item's title,
+     * so it must be set here — a bare URI shows no title at all.
+     */
+    fun mediaItem(item: MediaSniffer.Item): MediaItem {
+        val metadata = MediaMetadata.Builder()
+            .setTitle(MediaHubSheet.displayName(item.url))
+            .build()
+        return MediaItem.Builder()
+            .setUri(item.url)
+            .setMediaMetadata(metadata)
+            .build()
+    }
 
     /**
      * Player whose HTTP requests (including HLS/DASH playlist and segment

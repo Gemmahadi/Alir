@@ -39,6 +39,15 @@ class AudioService : MediaSessionService() {
             NowPlaying.clear()
             stopSelf()
         }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            // A finished track must not linger: clear the mini-player and the
+            // notification instead of sitting in a stale paused state.
+            if (playbackState == Player.STATE_ENDED) {
+                NowPlaying.clear()
+                stopSelf()
+            }
+        }
     }
 
     override fun onCreate() {
