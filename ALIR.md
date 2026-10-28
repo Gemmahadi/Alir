@@ -2,7 +2,7 @@
 
 **Alir** is an Android web browser by GEMMA WORKS, built from the open-source
 [Fulguris](https://github.com/Slion/Fulguris) browser by Stéphane Lenclud.
-Package: `com.alir.browser`, version 1.0.4 (code 5). Debug builds install as
+Package: `com.alir.browser`, version 1.0.5 (code 6). Debug builds install as
 `com.alir.browser.debug` (`.debug` suffix from the debug build type).
 
 ## What changed from Fulguris (v1 rebrand)
@@ -10,7 +10,7 @@ Package: `com.alir.browser`, version 1.0.4 (code 5). Debug builds install as
 - App name: Fulguris → **Alir** (all locales, `app_name` + user-visible strings).
 - Application ID: `net.slions.fulguris` → `com.alir.browser` (slions flavor,
   `.full` and `.fdroid` suffixes removed, so the fdroid release installs clean).
-- Version: 1.0.4 / code 5 (v1.0.0 / code 1 was the first CI-built APK).
+- Version: 1.0.5 / code 6 (v1.0.0 / code 1 was the first CI-built APK).
 - Custom URL scheme: `fulguris://` → `alir://`.
 - Launcher icon: new Alir mark (glowing cyan wave + white play triangle on navy).
 - About screen: new "Berdasarkan Fulguris" row linking to the upstream repo
@@ -96,6 +96,12 @@ Package: `com.alir.browser`, version 1.0.4 (code 5). Debug builds install as
   a second "Leaks" icon next to Alir — confusing for users). No app code
   called LeakCanary APIs, so removal is dependency-only; the dead
   "LeakCanary" toggle in Developer settings and its strings remain (no-op).
+- v1.0.5: diagnostic crash reporter (open lightning-button crash, cause
+  unknown from static analysis). `CrashReporter` catches uncaught
+  exceptions, saves the stack trace to internal storage, chains to the
+  previous handler (system FC dialog still shows), and on the next launch
+  shows the report in a dialog with Salin/Tutup (either deletes the file).
+  Native/WebView crashes produce NO report — that absence is diagnostic.
 
 ## Licenses
 

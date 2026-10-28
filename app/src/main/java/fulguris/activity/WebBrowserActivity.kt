@@ -556,6 +556,9 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
 
         // Hook in buttons with onClick handler
         iBindingToolbarContent.buttonReload.setOnClickListener(this)
+
+        // Alir diagnostic: if a previous run crashed, show its cause once (v1.0.5).
+        fulguris.utils.CrashReporter.showIfPending(this)
     }
 
     /**

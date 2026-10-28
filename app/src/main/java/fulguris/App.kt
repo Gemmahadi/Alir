@@ -181,6 +181,9 @@ class App : Application(), SharedPreferences.OnSharedPreferenceChangeListener,
         // SL: Use this to debug when launched from another app for instance
         //Debug.waitForDebugger()
         super.onCreate()
+        // Alir diagnostic: catch uncaught exceptions so the next launch can
+        // show the user the crash cause (v1.0.5).
+        fulguris.utils.CrashReporter.install(this)
         // No need to unregister I suppose cause this is for the life time of the application anyway
         userPreferences.preferences.registerOnSharedPreferenceChangeListener(this)
 
