@@ -2,7 +2,7 @@
 
 **Alir** is an Android web browser by GEMMA WORKS, built from the open-source
 [Fulguris](https://github.com/Slion/Fulguris) browser by Stéphane Lenclud.
-Package: `com.alir.browser`, version 1.0.7 (code 8). Debug builds install as
+Package: `com.alir.browser`, version 1.0.8 (code 9). Debug builds install as
 `com.alir.browser.debug` (`.debug` suffix from the debug build type).
 
 ## What changed from Fulguris (v1 rebrand)
@@ -10,7 +10,7 @@ Package: `com.alir.browser`, version 1.0.7 (code 8). Debug builds install as
 - App name: Fulguris → **Alir** (all locales, `app_name` + user-visible strings).
 - Application ID: `net.slions.fulguris` → `com.alir.browser` (slions flavor,
   `.full` and `.fdroid` suffixes removed, so the fdroid release installs clean).
-- Version: 1.0.7 / code 8 (v1.0.0 / code 1 was the first CI-built APK).
+- Version: 1.0.8 / code 9 (v1.0.0 / code 1 was the first CI-built APK).
 - Custom URL scheme: `fulguris://` → `alir://`.
 - Launcher icon: new Alir mark (glowing cyan wave + white play triangle on navy).
 - About screen: new "Berdasarkan Fulguris" row linking to the upstream repo
@@ -121,6 +121,18 @@ Package: `com.alir.browser`, version 1.0.7 (code 8). Debug builds install as
   `WebSettings.getDefaultUserAgent` before any page starts. This explains
   both the lightning-tap crash (a page was loading) and the startup crash
   (restored tab loading) — same code path.
+- v1.0.8: default bookmarks are Alir's, not Fulguris's. The slions-brand
+  seed (`app/src/slions/res/raw/default_bookmarks.dat`, the one our flavor
+  actually uses) and the main seed were both replaced with an "Alir"
+  folder: DuckDuckGo, Wikipedia (id), YouTube, Google. Plus a one-time
+  migration in `App.onCreate` (flag `alir_bookmarks_migrated`): existing
+  installs keep their own bookmarks, but the exact Fulguris default URLs
+  (folder "Fulguris" or titled "Fulguris home") are deleted and the Alir
+  set is imported if the Alir folder does not exist yet. The seed alone
+  would never have changed existing installs (it only runs when count==0).
+  Still Fulguris-linked (not changed — no Alir site exists to point to):
+  About rows for home page / terms / privacy (`url_app_home_page`,
+  `url_terms_and_conditions`, `url_privacy_policy` in donottranslate.xml).
 
 ## Licenses
 

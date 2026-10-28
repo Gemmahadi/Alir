@@ -246,6 +246,50 @@ class App : Application(), SharedPreferences.OnSharedPreferenceChangeListener,
             bookmarkModel.addBookmarkList(assetsBookmarks)
         }
 
+        // Alir 1.0.8: replace the Fulguris default bookmarks with Alir ones.
+        // The seed above only runs on fresh installs (count == 0), so
+        // existing installs would otherwise keep the Fulguris folder
+        // forever. Runs once; the user's own bookmarks are never touched —
+        // only exact default URLs in the Fulguris folder (or titled
+        // "Fulguris home") are removed, then the current Alir defaults
+        // are imported if the Alir folder does not exist yet.
+        if (!userPreferences.preferences.getBoolean("alir_bookmarks_migrated", false)) {
+            try {
+                val oldFulgurisUrls = setOf(
+                    "http://fulguris.slions.net",
+                    "https://github.com/slion/Fulguris",
+                    "https://play.google.com/store/apps/details?id=net.slions.fulguris.full.playstore",
+                    "https://f-droid.org/en/packages/net.slions.fulguris.full.fdroid",
+                    "https://discord.com/invite/7M4Ms5dMZE",
+                    "https://github.com/slion/Fulguris/issues",
+                    "https://github.com/sponsors/Slion"
+                )
+                val allBookmarks = bookmarkModel.getAllBookmarksSorted().blockingGet()
+                allBookmarks.filter { entry ->
+                    entry.url in oldFulgurisUrls &&
+                        (entry.folder.title == "Fulguris" || entry.title == "Fulguris home")
+                }.forEach { entry ->
+                    try {
+                        bookmarkModel.deleteBookmark(entry).blockingGet()
+                    } catch (e: Exception) {
+                        Timber.e(e, "Could not delete Fulguris bookmark ${entry.url}")
+                    }
+                }
+                val hasAlirFolder = bookmarkModel.getAllBookmarksSorted().blockingGet()
+                    .any { it.folder.title == "Alir" }
+                if (!hasAlirFolder) {
+                    Timber.d("Import Alir default bookmarks")
+                    bookmarkModel.addBookmarkList(
+                        BookmarkExporter.importBookmarksFromAssets(this@App)
+                    )
+                }
+                userPreferences.preferences.edit()
+                    .putBoolean("alir_bookmarks_migrated", true).apply()
+            } catch (e: Exception) {
+                Timber.e(e, "Alir bookmark migration failed, will retry next launch")
+            }
+        }
+
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
