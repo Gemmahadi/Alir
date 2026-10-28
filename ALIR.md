@@ -2,7 +2,7 @@
 
 **Alir** is an Android web browser by GEMMA WORKS, built from the open-source
 [Fulguris](https://github.com/Slion/Fulguris) browser by Stéphane Lenclud.
-Package: `com.alir.browser`, version 1.0.6 (code 7). Debug builds install as
+Package: `com.alir.browser`, version 1.0.7 (code 8). Debug builds install as
 `com.alir.browser.debug` (`.debug` suffix from the debug build type).
 
 ## What changed from Fulguris (v1 rebrand)
@@ -10,7 +10,7 @@ Package: `com.alir.browser`, version 1.0.6 (code 7). Debug builds install as
 - App name: Fulguris → **Alir** (all locales, `app_name` + user-visible strings).
 - Application ID: `net.slions.fulguris` → `com.alir.browser` (slions flavor,
   `.full` and `.fdroid` suffixes removed, so the fdroid release installs clean).
-- Version: 1.0.6 / code 7 (v1.0.0 / code 1 was the first CI-built APK).
+- Version: 1.0.7 / code 8 (v1.0.0 / code 1 was the first CI-built APK).
 - Custom URL scheme: `fulguris://` → `alir://`.
 - Launcher icon: new Alir mark (glowing cyan wave + white play triangle on navy).
 - About screen: new "Berdasarkan Fulguris" row linking to the upstream repo
@@ -111,6 +111,16 @@ Package: `com.alir.browser`, version 1.0.6 (code 7). Debug builds install as
   Note: the lightning crash's own report was overwritten by the startup
   crash, so the next report copied will be the startup crash — fix that
   first, then re-reproduce the lightning crash.
+- v1.0.7: ROOT CAUSE FOUND (from the 1.0.6 crash report, Xiaomi/Android 13):
+  the sniffer hook in `WebPageClient.shouldInterceptRequest` called
+  `view.settings.userAgentString` on Chromium's IO thread, where WebView
+  methods throw (`checkThread` RuntimeException). That single line was the
+  only `view.*` call in the whole interceptor. Fix: UA is now cached on the
+  UI thread in `onPageStarted` (after desktop mode may change it) and the
+  interceptor uses the cache, falling back to the static
+  `WebSettings.getDefaultUserAgent` before any page starts. This explains
+  both the lightning-tap crash (a page was loading) and the startup crash
+  (restored tab loading) — same code path.
 
 ## Licenses
 

@@ -116,6 +116,11 @@ class WebPageClient(
 
     private var currentUrl: String = ""
 
+    // Alir: User-Agent cached on the UI thread for the Media Sniffer.
+    // shouldInterceptRequest runs on Chromium's IO thread, where touching
+    // view.settings throws (WebView.checkThread) — see userAgentForPlayback.
+    @Volatile private var cachedUserAgent: String = ""
+
     // Count the number of resources loaded since the page was last started
     private var iResourceCount: Int = 0;
 
@@ -198,6 +203,24 @@ class WebPageClient(
     }
 
     /**
+     * User-Agent for playback headers. Must never touch view.settings here:
+     * shouldInterceptRequest runs on Chromium's IO thread and WebView
+     * methods throw off the UI thread (RuntimeException from checkThread —
+     * crashed on Xiaomi/Android 13, Oct 2026, 1.0.6 report). The UA is
+     * cached on the UI thread in onPageStarted; before any page starts we
+     * fall back to the static default UA, which needs no WebView instance.
+     */
+    private fun userAgentForPlayback(view: WebView): String {
+        val cached = cachedUserAgent
+        if (cached.isNotEmpty()) return cached
+        return try {
+            android.webkit.WebSettings.getDefaultUserAgent(view.context)
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    /**
      * Overrides [WebViewClient.shouldInterceptRequest].
      * Looks like we need to intercept our custom URLs here to implement support for fulguris and about scheme.
      *   comment Helium314: adBLock.shouldBock always never blocks if url.isSpecialUrl() or url.isAppScheme(), could be moved here
@@ -217,7 +240,7 @@ class WebPageClient(
             MediaSniffer.sniff(
                 url,
                 currentUrl,
-                view.settings.userAgentString,
+                userAgentForPlayback(view),
                 android.webkit.CookieManager.getInstance().getCookie(url)
             )
         }
@@ -508,6 +531,11 @@ class WebPageClient(
         resetLocationPermissionIfNeeded()
         // Now assuming our root HTML document has been loaded
         applyDesktopModeIfNeeded(view)
+
+        // Alir: refresh the cached UA after desktop mode may have changed
+        // it. onPageStarted runs on the UI thread, so this is safe — unlike
+        // reading view.settings inside shouldInterceptRequest (1.0.7 fix).
+        cachedUserAgent = view.settings.userAgentString
 
         // Inject DOCUMENT_START userscripts as early as possible
         if (userPreferences.extensionsEnabled) {
