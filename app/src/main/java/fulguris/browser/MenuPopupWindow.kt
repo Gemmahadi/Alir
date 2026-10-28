@@ -310,6 +310,7 @@ class MenuPopupWindow : PopupWindow {
             MenuItemId.Bookmarks -> iBinding.menuItemBookmarks.isVisible = true
             MenuItemId.History -> iBinding.menuItemHistory.isVisible = true
             MenuItemId.Downloads -> iBinding.menuItemDownloads.isVisible = true
+            MenuItemId.Media -> iBinding.menuItemMedia.isVisible = true
             MenuItemId.NewTab -> iBinding.menuItemNewTab.isVisible = true
             MenuItemId.Incognito -> iBinding.menuItemIncognito.isVisible = true
             MenuItemId.Options -> iBinding.menuItemOptions.isVisible = true
