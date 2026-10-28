@@ -31,7 +31,15 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install Android SDK 36 + build-tools 35
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;35.0.0"
+        # No `yes |` pipe here on purpose: Actions run steps use
+        # `bash -eo pipefail`, so `yes` dying with SIGPIPE after sdkmanager
+        # exits would fail the step even when the install succeeded.
+        # Licenses are pre-accepted via hash files instead.
+        run: |
+          mkdir -p "$ANDROID_HOME/licenses"
+          printf '8933bad161af4178b1185d1a37fbf41ea526' > "$ANDROID_HOME/licenses/android-sdk-license"
+          printf '84831b9409646a918e30573bab4c9cdd' > "$ANDROID_HOME/licenses/android-sdk-preview-license"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;35.0.0"
 
       - name: Build debug APK (fdroid flavor, no Firebase)
         run: ./gradlew assembleSlionsFullFdroidDebug --stacktrace
