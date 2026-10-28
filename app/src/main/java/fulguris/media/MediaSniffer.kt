@@ -41,6 +41,12 @@ object MediaSniffer {
 
     fun count(): Int = synchronized(lock) { itemsByUrl.size }
 
+    /** Items sniffed on pages of [host] (for the per-page toolbar badge). */
+    fun countForHost(host: String): Int = synchronized(lock) {
+        if (host.isEmpty()) return 0
+        itemsByUrl.values.count { android.net.Uri.parse(it.pageUrl).host == host }
+    }
+
     fun clear() = synchronized(lock) { itemsByUrl.clear() }
 
     /**

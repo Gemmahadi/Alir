@@ -4,7 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.TrackSelectionParameters
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -51,7 +53,10 @@ object MediaPlayback {
         val intent = Intent(context, AudioService::class.java).apply {
             putExtra(EXTRA_ACTION, action)
         }
-        ContextCompat.startForegroundService(context, intent)
+        // Plain start, not startForegroundService: these intents only control an
+        // already-running service, and a foreground start that never foregrounds
+        // (e.g. the service already stopped) trips the Android 12+ timeout crash.
+        context.startService(intent)
     }
 
     fun itemFrom(intent: Intent): MediaSniffer.Item? {
@@ -73,15 +78,28 @@ object MediaPlayback {
     /**
      * Player whose HTTP requests (including HLS/DASH playlist and segment
      * fetches, which share this factory) carry the item's headers.
+     * With [audioOnly], video tracks are disabled, so "listen only" on
+     * HLS/DASH does not download video segments. (A progressive mp4 is one
+     * muxed file, so it still downloads in full.)
      */
-    fun createPlayer(context: Context, item: MediaSniffer.Item): ExoPlayer {
+    fun createPlayer(
+        context: Context,
+        item: MediaSniffer.Item,
+        audioOnly: Boolean = false
+    ): ExoPlayer {
         val props = mutableMapOf<String, String>()
         if (item.referer.isNotEmpty()) props["Referer"] = item.referer
         if (item.userAgent.isNotEmpty()) props["User-Agent"] = item.userAgent
         item.cookie?.takeIf { it.isNotEmpty() }?.let { props["Cookie"] = it }
         val httpFactory = DefaultHttpDataSource.Factory().setDefaultRequestProperties(props)
         val mediaSourceFactory = DefaultMediaSourceFactory(context).setDataSourceFactory(httpFactory)
-        return ExoPlayer.Builder(context).setMediaSourceFactory(mediaSourceFactory).build()
+        return ExoPlayer.Builder(context).setMediaSourceFactory(mediaSourceFactory).build().also { exo ->
+            if (audioOnly) {
+                exo.trackSelectionParameters = TrackSelectionParameters.Builder()
+                    .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true)
+                    .build()
+            }
+        }
     }
 
     private fun putItemExtras(intent: Intent, item: MediaSniffer.Item) {

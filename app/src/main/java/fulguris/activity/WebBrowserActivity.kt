@@ -1497,9 +1497,14 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         updateMiniPlayer()
     }
 
-    /** Session total from the sniffer; badge hides when nothing was found yet. */
+    /**
+     * Badge counts only the current tab's page host, so it never piles up
+     * across sites; the hub itself keeps every sniffed item.
+     * Badge hides when the current page has no media yet.
+     */
     private fun updateMediaBadge() {
-        val count = MediaSniffer.count()
+        val host = android.net.Uri.parse(tabsManager.currentTab?.url ?: "").host ?: ""
+        val count = MediaSniffer.countForHost(host)
         runOnUiThread {
             iBindingToolbarContent.mediaBadge.apply {
                 visibility = if (count > 0) View.VISIBLE else View.GONE
@@ -3176,6 +3181,8 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
 
         // SL: Is this being called way too many times?
         doTabUpdate(aTab)
+        // Alir: refresh the per-page media badge when a new page starts loading.
+        updateMediaBadge()
         // SL: Putting this here to update toolbar background color was a bad idea
         // That somehow freezes the WebView after switching between a few tabs on F(x)tec Pro1 at least (Android 9)
         //initializePreferences()
@@ -3219,6 +3226,9 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
 
         // SL: Is this being called way too many times?
         doTabUpdate(aTab)
+        // Alir: refresh the per-page media badge on tab switch and on page
+        // finish (this callback fires for both).
+        updateMediaBadge()
         // SL: Putting this here to update toolbar background color was a bad idea
         // That somehow freezes the WebView after switching between a few tabs on F(x)tec Pro1 at least (Android 9)
         //initializePreferences()

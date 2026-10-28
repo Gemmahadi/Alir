@@ -2,7 +2,7 @@
 
 **Alir** is an Android web browser by GEMMA WORKS, built from the open-source
 [Fulguris](https://github.com/Slion/Fulguris) browser by Stéphane Lenclud.
-Package: `com.alir.browser`, version 1.0.1 (code 2). Debug builds install as
+Package: `com.alir.browser`, version 1.0.2 (code 3). Debug builds install as
 `com.alir.browser.debug` (`.debug` suffix from the debug build type).
 
 ## What changed from Fulguris (v1 rebrand)
@@ -10,7 +10,7 @@ Package: `com.alir.browser`, version 1.0.1 (code 2). Debug builds install as
 - App name: Fulguris → **Alir** (all locales, `app_name` + user-visible strings).
 - Application ID: `net.slions.fulguris` → `com.alir.browser` (slions flavor,
   `.full` and `.fdroid` suffixes removed, so the fdroid release installs clean).
-- Version: 1.0.1 / code 2 (v1.0.0 / code 1 was the first CI-built APK).
+- Version: 1.0.2 / code 3 (v1.0.0 / code 1 was the first CI-built APK).
 - Custom URL scheme: `fulguris://` → `alir://`.
 - Launcher icon: new Alir mark (glowing cyan wave + white play triangle on navy).
 - About screen: new "Berdasarkan Fulguris" row linking to the upstream repo
@@ -49,14 +49,25 @@ Package: `com.alir.browser`, version 1.0.1 (code 2). Debug builds install as
 - Playback headers (v1.0.1): the sniffer keeps the page's Referer, the
   WebView User-Agent and the media host's cookies, and ExoPlayer replays the
   request with them (bare URLs got 403 from hotlink-protected hosts).
-- Toolbar (v1.0.1): always-visible Media button with a session-total badge
-  (hides at zero), next to the menu button; the menu bolt is tinted Alir cyan.
+- Toolbar (v1.0.1): always-visible Media button with a badge (hides at zero),
+  next to the menu button; the menu bolt is tinted Alir cyan.
+  Badge (v1.0.2): counts only the current tab's page host, refreshed on
+  sniff, page start, tab change and resume; the hub itself keeps every item.
+  (v1.0.1 badge was the session total, which piled up across sites.)
 - Mini-player (v1.0.1): navy bar inside the toolbar layout (follows the
   toolbar top/bottom) while audio plays — title + play/pause + close, driven
   by `NowPlaying` from `AudioService`. Audio only, not video.
 - Audio hardening (v1.0.1): the service goes foreground immediately with a
   loading notification (Android 12+ timeout), a failed load stops it cleanly
   instead of crashing, and a missing URL stops it at once.
+- Audio fixes (v1.0.2): every new item rebuilds the player AND session, so
+  the previous site's Referer/UA/cookies can never leak into the next site's
+  requests (v1.0.1 reused the first player — real cross-site header leak);
+  mini-player actions use a plain start (not foreground start) and a stale
+  toggle with no session stops at once (Android 12+ timeout crash edge);
+  a failed load toasts "Gagal memutar audio" instead of dying silently;
+  the audio player disables video tracks, so "listen only" on HLS/DASH does
+  not download video segments (progressive mp4 still downloads in full).
 - Menus (v1.0.1): Sessions and Incognito start hidden (`HiddenMenu`,
   restorable from menu settings) so first-run menus stay focused.
 - Brand colors (v1.0.1): `alir_navy` #041c51 + `alir_cyan` #00d5ff for the new
@@ -64,8 +75,7 @@ Package: `com.alir.browser`, version 1.0.1 (code 2). Debug builds install as
   is untouched — a full theme recolor needs on-device visual checks.
 - Still NOT tested on a real phone (Oct 2026): CI compiles it, but playback,
   PiP, badge and mini-player behavior need on-device testing.
-- Deferred: snackbar on first detection per page; per-page badge count
-  (badge currently shows the session total).
+- Deferred: snackbar on first detection per page.
 
 ## Build history (GitHub Actions, repo Gemmahadi/Alir)
 
@@ -75,6 +85,8 @@ Package: `com.alir.browser`, version 1.0.1 (code 2). Debug builds install as
   Media branch. Fixes are in `.github/workflows/build-alir.yml` and the code.
 - v1.0.1: this batch (headers, listen-only, audio hardening, toolbar button
   + badge, mini-player, declutter, brand colors).
+- v1.0.2: header-leak fix (rebuild player per item), mini-player action
+  crash edge, play-failure toast, audio-only tracks, per-page badge.
 
 ## Licenses
 

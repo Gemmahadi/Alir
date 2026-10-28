@@ -11,6 +11,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import android.widget.Toast
 import fulguris.R
 
 /**
@@ -34,6 +35,7 @@ class AudioService : MediaSessionService() {
         }
 
         override fun onPlayerError(error: PlaybackException) {
+            Toast.makeText(this@AudioService, R.string.media_play_failed, Toast.LENGTH_SHORT).show()
             NowPlaying.clear()
             stopSelf()
         }
@@ -51,9 +53,14 @@ class AudioService : MediaSessionService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.getStringExtra(MediaPlayback.EXTRA_ACTION)) {
             MediaPlayback.ACTION_TOGGLE -> {
-                mediaSession?.player?.let { player ->
-                    if (player.isPlaying) player.pause() else player.play()
+                val player = mediaSession?.player
+                if (player == null) {
+                    // Stale mini-player tap after the service stopped: die at
+                    // once instead of lingering without a session.
+                    stopSelf()
+                    return START_NOT_STICKY
                 }
+                if (player.isPlaying) player.pause() else player.play()
                 return START_STICKY
             }
             MediaPlayback.ACTION_STOP -> {
@@ -67,14 +74,19 @@ class AudioService : MediaSessionService() {
             stopSelf()
             return START_NOT_STICKY
         }
-        // Session (and its header-carrying player) is built on first play, so
-        // playback replays the request the way the browser made it.
-        if (mediaSession == null) {
-            val player = MediaPlayback.createPlayer(this, item).also { exo ->
-                exo.addListener(playerListener)
-            }
-            mediaSession = MediaSession.Builder(this, player).build()
+        // Every new item gets a fresh player AND session. The previous
+        // player's HTTP factory carries the previous site's Referer, UA and
+        // cookies; reusing it would leak those headers to the new site
+        // (and get a 403 there). Rebuilding is cheap: one track plays at a time.
+        mediaSession?.let { session ->
+            session.player.removeListener(playerListener)
+            session.player.release()
+            session.release()
         }
+        val player = MediaPlayback.createPlayer(this, item, audioOnly = true).also { exo ->
+            exo.addListener(playerListener)
+        }
+        mediaSession = MediaSession.Builder(this, player).build()
         currentTitle = MediaHubSheet.displayName(item.url)
         goForeground(currentTitle)
         mediaSession?.player?.apply {
