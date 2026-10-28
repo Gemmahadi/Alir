@@ -2,7 +2,7 @@
 
 **Alir** is an Android web browser by GEMMA WORKS, built from the open-source
 [Fulguris](https://github.com/Slion/Fulguris) browser by Stéphane Lenclud.
-Package: `com.alir.browser`, version 1.0.11 (code 12). Debug builds install as
+Package: `com.alir.browser`, version 1.0.12 (code 13). Debug builds install as
 `com.alir.browser.debug` (`.debug` suffix from the debug build type).
 
 ## What changed from Fulguris (v1 rebrand)
@@ -10,7 +10,7 @@ Package: `com.alir.browser`, version 1.0.11 (code 12). Debug builds install as
 - App name: Fulguris → **Alir** (all locales, `app_name` + user-visible strings).
 - Application ID: `net.slions.fulguris` → `com.alir.browser` (slions flavor,
   `.full` and `.fdroid` suffixes removed, so the fdroid release installs clean).
-- Version: 1.0.11 / code 12 (v1.0.0 / code 1 was the first CI-built APK).
+- Version: 1.0.12 / code 13 (v1.0.0 / code 1 was the first CI-built APK).
 - Custom URL scheme: `fulguris://` → `alir://`.
 - Launcher icon: new Alir mark (glowing cyan wave + white play triangle on navy).
 - About screen: new "Berdasarkan Fulguris" row linking to the upstream repo
@@ -166,6 +166,21 @@ Package: `com.alir.browser`, version 1.0.11 (code 12). Debug builds install as
   post to the main thread themselves" — the trap). The only listener is
   the toolbar badge; the mini-player listener was already safe
   (everything inside runOnUiThread, no WebView reads).
+- v1.0.12: the icon STILL showed the bolt on the phone in 1.0.10 — THIRD
+  override trap, found after Adi reported "masih petir ijo". The adaptive
+  icon's foreground is NOT main's PNG: every flavor source set carries its
+  own `ic_launcher_foreground.xml` vector (fdroid/download/agent), and the
+  fdroid one is the white Fulguris bolt stroke (CPAL, © 2020 Lenclud) —
+  flavor drawables override main drawables of the same name, and MIUI on
+  Android 13 renders the adaptive icon, not the legacy mipmap. So the
+  1.0.10 mipmap fix could never show. Fix: deleted all 6 flavor vectors
+  (foreground + monochrome × 3 flavors) so the adaptive icon falls back
+  to main's PNG foreground (wave+play) and main's monochrome glyph
+  (play+wave). 1.0.12 also contains the 1.0.11 badge fix (built on top
+  of it); the 1.0.11 APK is never delivered, like 1.0.9 before it.
+  The green tint in Adi's screenshot is still unexplained by the APK
+  (all shipped icon art is navy/cyan/white) — most likely MIUI
+  edit-mode/theme overlay; to be confirmed from a non-edit drawer shot.
 
 ## Licenses
 
