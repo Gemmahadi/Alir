@@ -27,9 +27,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
+      # No setup-android step: GitHub's ubuntu runners already ship an
+      # Android SDK with ANDROID_HOME set, and setup-android@v3 failed
+      # on this repo's runs before reaching the build.
       - name: Install Android SDK 36 + build-tools 35
         # No `yes |` pipe here on purpose: Actions run steps use
         # `bash -eo pipefail`, so `yes` dying with SIGPIPE after sdkmanager
