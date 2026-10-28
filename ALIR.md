@@ -2,7 +2,7 @@
 
 **Alir** is an Android web browser by GEMMA WORKS, built from the open-source
 [Fulguris](https://github.com/Slion/Fulguris) browser by Stéphane Lenclud.
-Package: `com.alir.browser`, version 1.0.12 (code 13). Debug builds install as
+Package: `com.alir.browser`, version 1.0.13 (code 14). Debug builds install as
 `com.alir.browser.debug` (`.debug` suffix from the debug build type).
 
 ## What changed from Fulguris (v1 rebrand)
@@ -10,7 +10,7 @@ Package: `com.alir.browser`, version 1.0.12 (code 13). Debug builds install as
 - App name: Fulguris → **Alir** (all locales, `app_name` + user-visible strings).
 - Application ID: `net.slions.fulguris` → `com.alir.browser` (slions flavor,
   `.full` and `.fdroid` suffixes removed, so the fdroid release installs clean).
-- Version: 1.0.12 / code 13 (v1.0.0 / code 1 was the first CI-built APK).
+- Version: 1.0.13 / code 14 (v1.0.0 / code 1 was the first CI-built APK).
 - Custom URL scheme: `fulguris://` → `alir://`.
 - Launcher icon: new Alir mark (glowing cyan wave + white play triangle on navy).
 - About screen: new "Berdasarkan Fulguris" row linking to the upstream repo
@@ -181,6 +181,35 @@ Package: `com.alir.browser`, version 1.0.12 (code 13). Debug builds install as
   The green tint in Adi's screenshot is still unexplained by the APK
   (all shipped icon art is navy/cyan/white) — most likely MIUI
   edit-mode/theme overlay; to be confirmed from a non-edit drawer shot.
+  Build history: v1.0.12 = CI run 40685874803, commit 365e481 (parent
+  092defb, so the badge fix is in), APK 24,970,054 B, SHA-256
+  9a6f5c7a…612633, verified (badging code 13 / 1.0.12, apksigner OK,
+  1 LAUNCHER, APK foreground = main PNG 90,251 B hash 6416f1fa… viewed
+  as wave+play, monochrome = Alir glyph, no bolt vector, legacy xxhdpi
+  still d6bc7faf…). v1.0.11 (commit 092defb) was never delivered.
+- Test links verified live 28 Okt 2026 (HEAD-checked, use for sniffer
+  retests; YouTube/IG/Spotify will NOT show a badge — blob/DRM streams
+  are invisible to extension detection, by design): audio
+  https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3 (direct
+  mp3, ~6 min, doubles as the screen-off background test); video
+  https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4
+  (direct mp4); HLS
+  https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8 (direct playlist;
+  browser may download it — play from the Media hub instead). Dead from
+  this egress (do not use): gtv-videos-bucket (403), W3Schools (403),
+  sample-videos.com (unreachable).
+- v1.0.13: HLS/DASH player crash (report 1.0.12, 19:42, from the Mux
+  m3u8 test link): PlayerActivity.onCreate → setMediaItem →
+  DefaultMediaSourceFactory → ClassNotFoundException
+  HlsMediaSource$Factory. Cause: media3 splits streaming into separate
+  artifacts and only exoplayer/session/ui were declared — core handles
+  progressive mp4/mp3, but HLS needs media3-exoplayer-hls and DASH
+  needs media3-exoplayer-dash, both loaded reflectively by
+  DefaultMediaSourceFactory (so the absence crashes instead of
+  degrading). Debug has minifyEnabled=false, so R8 stripping is ruled
+  out — it was purely the missing artifacts. Fix: both artifacts added
+  (1.7.1). Both streaming types the sniffer detects are VIDEO, so only
+  the PlayerActivity path needed them; AudioService never sees HLS/DASH.
 
 ## Licenses
 

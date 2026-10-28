@@ -342,6 +342,8 @@ dependencies {
     implementation 'androidx.webkit:webkit:1.10.0'
     // Alir media player (Media Sniffer hub + background audio)
     implementation libs.androidx.media3.exoplayer
+    implementation libs.androidx.media3.exoplayer.hls
+    implementation libs.androidx.media3.exoplayer.dash
     implementation libs.androidx.media3.session
     implementation libs.androidx.media3.ui
 
