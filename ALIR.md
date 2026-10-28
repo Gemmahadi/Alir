@@ -2,7 +2,7 @@
 
 **Alir** is an Android web browser by GEMMA WORKS, built from the open-source
 [Fulguris](https://github.com/Slion/Fulguris) browser by Stéphane Lenclud.
-Package: `com.alir.browser`, version 1.0.8 (code 9). Debug builds install as
+Package: `com.alir.browser`, version 1.0.9 (code 10). Debug builds install as
 `com.alir.browser.debug` (`.debug` suffix from the debug build type).
 
 ## What changed from Fulguris (v1 rebrand)
@@ -10,7 +10,7 @@ Package: `com.alir.browser`, version 1.0.8 (code 9). Debug builds install as
 - App name: Fulguris → **Alir** (all locales, `app_name` + user-visible strings).
 - Application ID: `net.slions.fulguris` → `com.alir.browser` (slions flavor,
   `.full` and `.fdroid` suffixes removed, so the fdroid release installs clean).
-- Version: 1.0.8 / code 9 (v1.0.0 / code 1 was the first CI-built APK).
+- Version: 1.0.9 / code 10 (v1.0.0 / code 1 was the first CI-built APK).
 - Custom URL scheme: `fulguris://` → `alir://`.
 - Launcher icon: new Alir mark (glowing cyan wave + white play triangle on navy).
 - About screen: new "Berdasarkan Fulguris" row linking to the upstream repo
@@ -133,6 +133,9 @@ Package: `com.alir.browser`, version 1.0.8 (code 9). Debug builds install as
   Still Fulguris-linked (not changed — no Alir site exists to point to):
   About rows for home page / terms / privacy (`url_app_home_page`,
   `url_terms_and_conditions`, `url_privacy_policy` in donottranslate.xml).
+  Build history: v1.0.8 = CI run 40675022543, commit d903c3b, APK
+  24,768,777 B, SHA-256 0f2e17fc…12087, verified (badging code 9 / 1.0.8,
+  apksigner OK, 1 LAUNCHER, 0 leak, new seed + migration flag in dex).
 
 ## Licenses
 
