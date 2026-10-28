@@ -44,6 +44,14 @@ class SplashActivity @Inject constructor(): LocaleAwareActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Alir diagnostic: if a previous run crashed, show its report in a
+        // minimal activity that cannot hit the browser startup crash (v1.0.6).
+        if (fulguris.utils.CrashReporter.pendingReport(this) != null) {
+            startActivity(Intent(this, CrashReportActivity::class.java))
+            finish()
+            return
+        }
+
         // Splashscreen actually crashes on Android 12 when targeting Android 13
         // https://stackoverflow.com/questions/72390747/crash-activity-client-record-must-not-be-null-to-execute-transaction-item-only
         // See: https://issuetracker.google.com/issues/210886009

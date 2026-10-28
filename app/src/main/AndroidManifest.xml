@@ -133,6 +133,13 @@
             android:name="android.webkit.WebView.MetricsOptOut"
             android:value="true" />
 
+        <!-- Alir diagnostic: shows a saved crash report in a minimal activity
+             that cannot hit the browser startup crash (v1.0.6) -->
+        <activity
+            android:name="fulguris.activity.CrashReportActivity"
+            android:theme="@style/Theme.App.DayNight"
+            android:exported="false" />
+
         <!-- No MAIN intent filter as this is launched through our splash screen -->
         <activity
             android:name="fulguris.activity.MainActivity"

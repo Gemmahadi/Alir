@@ -1,17 +1,8 @@
 package fulguris.utils
 
-import android.app.Activity
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
-import android.graphics.Typeface
 import android.os.Build
 import android.util.Log
-import android.view.ViewGroup
-import android.widget.ScrollView
-import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import fulguris.BuildConfig
 import java.io.File
 import java.text.SimpleDateFormat
@@ -20,13 +11,16 @@ import java.util.Locale
 import kotlin.system.exitProcess
 
 /**
- * Alir diagnostic crash reporter (v1.0.5).
+ * Alir diagnostic crash reporter (v1.0.5+).
  *
  * A normal force-close leaves no trace a user can share, so this catches
  * uncaught exceptions, saves the full stack trace to internal storage, and
- * shows it on the next launch with a copy button. It never hides the crash
- * itself: after saving, it chains to the previous handler so the system
- * still shows its force-close dialog.
+ * chains to the previous handler so the system still shows its force-close
+ * dialog. The saved report is shown on the next launch by
+ * [fulguris.activity.CrashReportActivity], a minimal activity that cannot
+ * hit the browser startup crash (v1.0.6 moved it out of a dialog at the end
+ * of the browser's onCreate, which died with the activity when the app
+ * crashed again during startup).
  *
  * It only covers Kotlin/Java exceptions. A native crash (e.g. inside the
  * WebView renderer) will NOT produce a report — that absence is itself a
@@ -75,58 +69,27 @@ object CrashReporter {
         }
     }
 
-    /**
-     * If a crash report from a previous run exists, show it once. Either
-     * button deletes the file so it does not reappear on later launches.
-     */
-    fun showIfPending(activity: Activity) {
-        val file = File(activity.filesDir, FILE_NAME)
-        if (!file.exists()) return
+    /** The saved report from a previous crashed run, or null when there is none. */
+    fun pendingReport(context: Context): String? {
+        val file = File(context.filesDir, FILE_NAME)
+        if (!file.exists()) return null
         val report = try {
             file.readText()
         } catch (e: Exception) {
-            return
+            return null
         }
         if (report.isBlank()) {
             file.delete()
-            return
+            return null
         }
-        val text = TextView(activity).apply {
-            this.text = report
-            typeface = Typeface.MONOSPACE
-            textSize = 12f
-            setTextIsSelectable(true)
-            setPadding(32, 32, 32, 32)
+        return report
+    }
+
+    fun clearReport(context: Context) {
+        try {
+            File(context.filesDir, FILE_NAME).delete()
+        } catch (ignored: Exception) {
+            // Best effort; a leftover file just shows the report once more.
         }
-        val scroll = ScrollView(activity).apply {
-            addView(
-                text,
-                ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
-        }
-        AlertDialog.Builder(activity)
-            .setTitle("Alir sempat crash")
-            .setMessage(
-                "Ini penyebab crash terakhir. Salin lalu kirim ke developer, " +
-                    "atau tutup untuk menghapus laporan ini."
-            )
-            .setView(scroll)
-            .setPositiveButton("Salin") { _, _ ->
-                val clipboard =
-                    activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                clipboard.setPrimaryClip(
-                    ClipData.newPlainText("Alir crash report", report)
-                )
-                Toast.makeText(activity, "Laporan crash disalin", Toast.LENGTH_SHORT).show()
-                file.delete()
-            }
-            .setNegativeButton("Tutup") { _, _ ->
-                file.delete()
-            }
-            .setCancelable(false)
-            .show()
     }
 }
