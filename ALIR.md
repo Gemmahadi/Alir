@@ -210,6 +210,14 @@ Package: `com.alir.browser`, version 1.0.13 (code 14). Debug builds install as
   out — it was purely the missing artifacts. Fix: both artifacts added
   (1.7.1). Both streaming types the sniffer detects are VIDEO, so only
   the PlayerActivity path needed them; AudioService never sees HLS/DASH.
+  Delivered: CI run 40690288295, commit 375c47d, APK 25,232,325 B,
+  SHA-256 fec0be3d…241f4a, verified (badging code 14 / 1.0.13, apksigner
+  OK, 1 LAUNCHER, HlsMediaSource$Factory + DashMediaSource$Factory
+  present in classes.dex). Awaiting Adi's Mux-link retest.
+
+## 1.0.14 — release channel (unduhan langsung)
+- Isi sama persis dengan 1.0.13; nomor naik karena ini jalur distribusi baru: APK release (paket com.alir.browser, tanpa suffix .debug) untuk unduhan langsung dari alir.web.id, dibangun via assembleSlionsFullFdroidRelease (unsigned di CI, di-sign manual dengan keystore release).
+- Link in-app slions.net BELUM diubah (keputusan terpisah, menunggu jawaban Adi).
 
 ## Licenses
 

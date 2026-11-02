@@ -1,7 +1,7 @@
 [versions]
 # App versions, references using periods like: slions.version.code
-slions-version-code = "14"
-slions-version-name = "1.0.13"
+slions-version-code = "15"
+slions-version-name = "1.0.14"
 
 # Android SDK
 compileSdk = "36"
